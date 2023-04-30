@@ -1,6 +1,4 @@
-import { useState } from 'react';
-import { nanoid } from 'nanoid';
-import PropTypes from 'prop-types';
+import { addContact } from 'redux/index';
 import {
   AddContactBtn,
   NameInput,
@@ -9,50 +7,36 @@ import {
   NumberInput,
   NumberLabel,
 } from './contactForm.styled';
+import { useDispatch, useSelector } from 'react-redux';
 
-export default function ContactForm({ addContact, contacts }) {
-  const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
+export default function ContactForm() {
+  const contacts = useSelector(state => state.contacts);
+  const dispatch = useDispatch();
 
-  const contactChange = ({ target: { name, value } }) => {
-    if (name === 'name') {
-      setName(value);
-    }
-    if (name === 'number') {
-      setNumber(value);
-    }
-  };
-
-  const contactSubmit = e => {
+  const onSubmit = e => {
     e.preventDefault();
-
+    const form = e.currentTarget;
+    const nameContact = form.elements.name.value.trim();
+    const numberContact = form.elements.number.value.trim();
+    
     const searchTwins = contacts.some(
       contact =>
-        contact.name.toLowerCase() === e.target.name.value.toLowerCase().trim()
+        contact.name.toLowerCase() ===
+        form.elements.name.value.toLowerCase().trim()
     );
 
     if (searchTwins) {
-      alert(`${e.target.name.value.trim()} is already in contacts`);
-      reset();
+      // alert(`${form.elements.name.value.trim()} is already in contacts`);
+      form.reset();
       return;
     }
+    dispatch(addContact(nameContact, numberContact));
 
-    addContact({
-      id: nanoid(),
-      name: name.trim(),
-      number: number.trim(),
-    });
-
-    reset();
-  };
-
-  const reset = () => {
-    setName('');
-    setNumber('');
+    form.reset();
   };
 
   return (
-    <NewContactForm onSubmit={contactSubmit}>
+    <NewContactForm onSubmit={onSubmit}>
       <NameLabel htmlFor="nameContact">Name</NameLabel>
       <NameInput
         type="text"
@@ -62,8 +46,6 @@ export default function ContactForm({ addContact, contacts }) {
         pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
         title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
         required
-        value={name}
-        onChange={contactChange}
       />
       <NumberLabel htmlFor="numberContact">Number</NumberLabel>
       <NumberInput
@@ -74,17 +56,8 @@ export default function ContactForm({ addContact, contacts }) {
         pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
         title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
         required
-        value={number}
-        onChange={contactChange}
       />
-      <AddContactBtn type="submit" disabled={!name || !number}>
-        Add contact
-      </AddContactBtn>
+      <AddContactBtn type="submit">Add contact</AddContactBtn>
     </NewContactForm>
   );
 }
-
-ContactForm.propTypes = {
-  addContact: PropTypes.func.isRequired,
-  contacts: PropTypes.array.isRequired,
-};
