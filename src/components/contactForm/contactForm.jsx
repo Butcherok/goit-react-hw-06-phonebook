@@ -26,7 +26,7 @@ export default function ContactForm() {
     );
 
     if (searchTwins) {
-      // alert(`${form.elements.name.value.trim()} is already in contacts`);
+      alert(`${form.elements.name.value.trim()} is already in contacts`);
       form.reset();
       return;
     }
